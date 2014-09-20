@@ -59,8 +59,6 @@ class LAMMPS {
   void destroy();
 
  private:
-  void help();
-  void print_style(const char *, int &);
   LAMMPS() {};                   // prohibit using the default constructor
   LAMMPS(const LAMMPS &) {};     // prohibit using the copy constructor
 };

@@ -1,4 +1,4 @@
-/* ----------------------------------------------------------------------
+/* -*- c++ -*- ----------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -35,8 +35,10 @@ class ComputeTempProfile : public Compute {
   void compute_array();
 
   void remove_bias(int, double *);
+  void remove_bias_thr(int, double *, double *);
   void remove_bias_all();
   void restore_bias(int, double *);
+  void restore_bias_thr(int, double *, double *);
   void restore_bias_all();
   double memory_usage();
 

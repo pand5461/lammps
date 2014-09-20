@@ -798,6 +798,10 @@ void CreateAtoms::add_molecule(double *center)
     n = atom->nlocal - 1;
     atom->add_molecule_atom(onemol,m,n,0);
   }
+  atom->nbonds += onemol->nbonds;
+  atom->nangles += onemol->nangles;
+  atom->ndihedrals += onemol->ndihedrals;
+  atom->nimpropers += onemol->nimpropers;
 }
 
 /* ----------------------------------------------------------------------

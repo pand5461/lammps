@@ -1,0 +1,165 @@
+#!Nsis Installer Command Script
+#
+# The following external defines are recognized:
+# ${VERSION} = YYYYMMDD
+# ${BIT}     = 32 or 64
+# ${LIBGCC}  = name of libgcc dll file to use
+# ${MINGW}   = <path to mingw windows dlls>
+
+!include "LogicLib.nsh"
+!include "EnvVarUpdate.nsh"
+!include "x64.nsh"
+
+RequestExecutionLevel admin
+
+!macro VerifyUserIsAdmin
+UserInfo::GetAccountType
+pop $0
+${If} $0 != "admin"
+   messageBox mb_iconstop "Administrator rights required!"
+   setErrorLevel 740 ;ERROR_ELEVATION_REQUIRED
+   quit
+${EndIf}
+!macroend
+
+!macro CreateInternetShortcut FILENAME URL ICONFILE ICONINDEX
+WriteINIStr "${FILENAME}.url" "InternetShortcut" "URL" "${URL}"
+WriteINIStr "${FILENAME}.url" "InternetShortcut" "IconFile" "${ICONFILE}"
+WriteINIStr "${FILENAME}.url" "InternetShortcut" "IconIndex" "${ICONINDEX}"
+!macroend
+
+!ifndef LIBGCC
+!define LIBGCC libgcc_s_sjlj-1.dll
+!endif
+
+!define LAMMPS "LAMMPS ${BIT}-bit ${VERSION}"
+OutFile "${BIT}bit/lammps-${BIT}bit-${VERSION}.exe"
+
+Name "${LAMMPS}"
+!if ${BIT} == 64
+InstallDir "$ProgramFiles64\${LAMMPS}"
+!define MPICHDIR "$ProgramFiles64\MPICH2\bin"
+!else
+InstallDir "$ProgramFiles\${LAMMPS}"
+!define MPICHDIR "$ProgramFiles\MPICH2\bin"
+!endif
+
+XPStyle on
+ShowInstDetails show
+ShowUninstDetails show
+SetCompressor lzma
+
+Page directory
+Page instfiles
+
+DirText "Please select the LAMMPS installation folder."
+
+function .onInit
+  setShellVarContext all
+!insertmacro VerifyUserIsAdmin
+functionEnd
+
+Section "${LAMMPS}"
+  SectionIn RO
+  SetRegView ${BIT}
+
+  CreateDirectory "$SMPROGRAMS\${LAMMPS}"
+  CreateShortCut  "$SMPROGRAMS\${LAMMPS}\Uninstall.lnk"      "$INSTDIR\Uninstall.exe"          "" ""
+  CreateShortCut  "$SMPROGRAMS\${LAMMPS}\README.lnk"         "$INSTDIR\README.txt"             "" ""
+  CreateShortCut  "$SMPROGRAMS\${LAMMPS}\LAMMPS Manual.lnk"  "$INSTDIR\doc\LAMMPS-Manual.pdf"  "" ""
+  CreateShortCut  "$SMPROGRAMS\${LAMMPS}\Colvars Manual.lnk" "$INSTDIR\doc\Colvars-Manual.pdf" "" ""
+  CreateShortCut  "$SMPROGRAMS\${LAMMPS}\CreatAtoms Manual.lnk" "$INSTDIR\doc\CreateAtoms-Manual.pdf" "" ""
+  CreateShortCut  "$SMPROGRAMS\${LAMMPS}\Benchmarks.lnk"     "$WINDIR\explorer.exe"  \
+                                                             '/e,"$INSTDIR\Benchmarks"'  ""
+  CreateShortCut  "$SMPROGRAMS\${LAMMPS}\Examples.lnk"       "$WINDIR\explorer.exe"    \
+                                                             '/e,"$INSTDIR\Examples"'    ""
+  CreateShortCut  "$SMPROGRAMS\${LAMMPS}\LICENSE.lnk"        "$INSTDIR\LICENSE.txt"            "" ""
+
+!insertmacro CreateInternetShortcut "$SMPROGRAMS\${LAMMPS}\LAMMPS WWW Site" \
+  "http://lammps.sandia.gov" "" "0"
+!insertmacro CreateInternetShortcut "$SMPROGRAMS\${LAMMPS}\LAMMPS Commands" \
+  "http://lammps.sandia.gov/doc/Section_commands.html#cmd_5" "" "0"
+
+  SetOutPath "$INSTDIR"
+  CreateDirectory "$INSTDIR\bin"
+  CreateDirectory "$INSTDIR\Doc"
+  CreateDirectory "$INSTDIR\Benchmarks"
+  CreateDirectory "$INSTDIR\Examples"
+  CreateDirectory "$INSTDIR\Potentials"
+  CreateDirectory "$INSTDIR\frc_files"
+
+  File /oname=License.txt lammps-current/LICENSE
+  File /oname=README.txt  lammps-current/README
+
+  SetOutPath "$INSTDIR\bin"
+  File ${MINGW}/${LIBGCC}
+  File ${MINGW}/libgfortran-3.dll
+  File ${MINGW}/libgomp-1.dll
+  File ${MINGW}/libjpeg-62.dll
+  File ${MINGW}/libpng15-15.dll
+  File ${MINGW}/zlib1.dll
+  File ${MINGW}/libquadmath-0.dll
+  File ${MINGW}/libstdc++-6.dll
+  File ${MINGW}/pthreadGC2.dll
+
+  File mingw${BIT}/*.exe
+  File mingw${BIT}/*.dll
+
+  SetOutPath "$INSTDIR\Doc"
+  File /oname=LAMMPS-Manual.pdf  lammps-current/doc/Manual.pdf
+  File /oname=Colvars-Manual.pdf lammps-current/doc/PDF/colvars-refman-lammps.pdf
+  File /oname=CreateAtoms-Manual.pdf  lammps-current/tools/createatoms/Manual.pdf
+
+  SetOutPath "$INSTDIR\Potentials"
+  File lammps-current/potentials/*
+
+  SetOutPath "$INSTDIR\Examples"
+  File /r /x log.*.4 lammps-current/examples/*
+
+  SetOutPath "$INSTDIR\frc_files"
+  File /oname=README-msi2lmp.txt lammps-current/tools/msi2lmp/README.txt
+  File /r lammps-current/tools/msi2lmp/frc_files/*
+
+  SetOutPath "$INSTDIR\Benchmarks"
+  File /r /x log.*.4 lammps-current/bench/*
+
+  ${EnvVarUpdate} $0 "PATH"              "A" "HKLM" "${MPICHDIR}"
+  ${EnvVarUpdate} $0 "PATH"              "A" "HKLM" "$INSTDIR\bin"
+  ${EnvVarUpdate} $0 "LAMMPS_POTENTIALS" "A" "HKLM" "$INSTDIR\Potentials"
+  ${EnvVarUpdate} $0 "MSI2LMP_LIBRARY"    "A" "HKLM" "$INSTDIR\frc_files"
+SectionEnd
+
+function un.onInit
+  SetShellVarContext all
+!insertmacro VerifyUserIsAdmin
+functionEnd
+
+Section "Uninstall"
+  SetRegView ${BIT}
+
+  ${un.EnvVarUpdate} $0 "PATH"              "R" "HKLM" "${MPICHDIR}"
+  ${un.EnvVarUpdate} $0 "PATH"              "R" "HKLM" "$INSTDIR\bin"
+  ${un.EnvVarUpdate} $0 "LAMMPS_POTENTIALS" "R" "HKLM" "$INSTDIR\Potentials"
+  ${un.EnvVarUpdate} $0 "MSI2LMP_LIBRARY"    "R" "HKLM" "$INSTDIR\frc_files"
+
+  RMDir /r "$SMPROGRAMS\${LAMMPS}"
+
+  Delete /REBOOTOK   "$INSTDIR\*.txt"
+  Delete /REBOOTOK   "$INSTDIR\Uninstall.exe"
+  RMDir /r /REBOOTOK "$INSTDIR\bin"
+  RMDir /r /REBOOTOK "$INSTDIR\Benchmarks"
+  RMDir /r /REBOOTOK "$INSTDIR\Doc"
+  RMDir /r /REBOOTOK "$INSTDIR\Examples"
+  RMDir /r /REBOOTOK "$INSTDIR\Potentials"
+  RMDir /r /REBOOTOK "$INSTDIR\frc_files"
+  RMDir /REBOOTOK "$INSTDIR"
+SectionEnd
+
+Section -post
+  SetRegView ${BIT}
+  WriteUninstaller "$INSTDIR\Uninstall.exe"
+SectionEnd
+
+# Local Variables:
+# mode: sh
+# End:

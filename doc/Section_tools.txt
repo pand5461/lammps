@@ -126,7 +126,7 @@ chains and solvent atoms can strongly overlap, so LAMMPS needs to run
 the system initially with a "soft" pair potential to un-overlap it.
 The syntax for running the tool is
 
-chain < def.chain > data.file :pre
+chain &lt; def.chain &gt; data.file :pre
 
 See the def.chain or def.chain.ab files in the tools directory for
 examples of definition files.  This tool was used to create the
@@ -337,7 +337,7 @@ atoms can strongly overlap, so LAMMPS needs to run the system
 initially with a "soft" pair potential to un-overlap it.  The syntax
 for running the tool is
 
-micelle2d < def.micelle2d > data.file :pre
+micelle2d &lt; def.micelle2d &gt; data.file :pre
 
 See the def.micelle2d file in the tools directory for an example of a
 definition file.  This tool was used to create the system for the

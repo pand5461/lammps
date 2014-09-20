@@ -15,6 +15,7 @@
 
 import sys,traceback,types
 from ctypes import *
+import os.path
 
 class lammps:
   def __init__(self,name="",cmdargs=None):

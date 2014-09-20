@@ -79,7 +79,7 @@ void FixNHAsphereOMP::nve_v()
   const int nlocal = (igroup == atom->firstgroup) ? atom->nfirst : atom->nlocal;
   int i;
 
-  // standard nve_v velocity update. for efficiency the loop is 
+  // standard nve_v velocity update. for efficiency the loop is
   // merged with FixNHOMP instead of calling it for the COM update.
 
 #if defined(_OPENMP)
@@ -122,7 +122,7 @@ void FixNHAsphereOMP::nve_x()
   // update quaternion a full step via Richardson iteration
   // returns new normalized quaternion
   // principal moments of inertia
-  
+
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) private(i) schedule(static)
 #endif
@@ -185,11 +185,11 @@ void FixNHAsphereOMP::nh_v_temp()
     for (i = 0; i < nlocal; i++) {
       double buf[3];
       if (mask[i] & groupbit) {
-        temperature->remove_bias(i,&v[i].x);
+        temperature->remove_bias_thr(i,&v[i].x,buf);
         v[i].x *= factor_eta;
         v[i].y *= factor_eta;
         v[i].z *= factor_eta;
-        temperature->restore_bias(i,&v[i].x);
+        temperature->restore_bias_thr(i,&v[i].x,buf);
         angmom[i].x *= factor_eta;
         angmom[i].y *= factor_eta;
         angmom[i].z *= factor_eta;

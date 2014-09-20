@@ -61,7 +61,7 @@ void ComputeTemp::dof_compute()
   if (fix_dof) adjust_dof_fix();
   double natoms = group->count(igroup);
   dof = domain->dimension * natoms;
-  dof -= extra_dof + fix_dof;
+  dof -= static_cast<double>(extra_dof + fix_dof);
   if (dof > 0.0) tfactor = force->mvv2e / (dof * force->boltz);
   else tfactor = 0.0;
 }

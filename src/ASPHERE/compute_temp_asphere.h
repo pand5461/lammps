@@ -1,4 +1,4 @@
-/* ----------------------------------------------------------------------
+/* -*- c++ -*- ----------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -35,6 +35,8 @@ class ComputeTempAsphere : public Compute {
 
   void remove_bias(int, double *);
   void restore_bias(int, double *);
+  void remove_bias_thr(int, double *, double *);
+  void restore_bias_thr(int, double *, double *);
 
  private:
   int mode;

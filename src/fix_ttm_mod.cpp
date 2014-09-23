@@ -206,11 +206,6 @@ FixTTM_MOD::FixTTM_MOD(LAMMPS *lmp, int narg, char **arg) :
   fgets(linee,MAXLINE,fpr_2);
   sscanf(linee,"%lg",&tresh_d);
   electron_temperature_min = tresh_d;
-// ETD (0 or 1)
-  fgets(linee,MAXLINE,fpr_2);
-  fgets(linee,MAXLINE,fpr_2);
-  sscanf(linee,"%d",&tresh_i);
-  etd_us = tresh_i;
   
   fclose(fpr_2);
 
@@ -375,7 +370,6 @@ void FixTTM_MOD::post_force(int vflag)
   double **x = atom->x;
   double **v = atom->v;
   double **f = atom->f;
-//  double *q = atom->q;
   int *type = atom->type;
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
@@ -466,8 +460,6 @@ void FixTTM_MOD::post_force(int vflag)
             f[i][2] += flangevin[i][2];
 	  }
       }
-
-/*      if (etd_us > 0) q[i] = T_electron[ixnode][iynode][iznode]/11600.0; */
 
 
       if (movsur == 1){

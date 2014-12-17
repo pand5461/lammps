@@ -157,6 +157,7 @@ FixAveSpatial::FixAveSpatial(LAMMPS *lmp, int narg, char **arg) :
     iarg++;
   }
 
+  if (nvalues == 0) error->warning(FLERR,"No input values for fix ave/spatial");
   // optional args
 
   normflag = ALL;
